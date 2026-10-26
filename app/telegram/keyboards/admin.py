@@ -1,0 +1,105 @@
+"""سازنده صفحه‌کلیدهای پنل مدیریت (Inline Keyboard — بخش ۱۶.۱ و ۱۶.۲ سند)."""
+from __future__ import annotations
+
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+
+def kb(rows: list[list[tuple[str, str]]]) -> InlineKeyboardMarkup:
+    """ساخت سریع کیبورد از [(متن، callback_data)]."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=t, callback_data=c) for t, c in row] for row in rows
+    ])
+
+
+# ---------- منوی اصلی (بخش ۱۶.۲) ----------
+MAIN_MENU = kb([
+    [("👥 کاربران", "a:users:menu:")],
+    [("💎 اشتراک‌ها و پلن‌ها", "a:subs:menu:")],
+    [("📊 آمار و گزارش‌ها", "a:stats:menu:")],
+    [("📥 دانلودها و صف", "a:downloads:menu:")],
+    [("🎟 کدهای اشتراک", "a:codes:menu:")],
+    [("📢 پیام همگانی", "a:broadcast:menu:")],
+    [("🛠 تنظیمات ربات", "a:settings:menu:")],
+    [("📋 گزارش خطاها", "a:errors:menu:")],
+    [("🔐 مدیریت مدیران", "a:admins:menu:")],
+    [("🩺 مرکز سلامت", "a:health:menu:")],
+])
+
+BACK_HOME_ROW = [("🏠 منوی اصلی", "a:home:")]
+BACK_HOME = kb([BACK_HOME_ROW])
+
+
+def with_back(rows: list[list[tuple[str, str]]]) -> InlineKeyboardMarkup:
+    """افزودن دکمه بازگشت به منوی اصلی."""
+    return kb([*rows, BACK_HOME_ROW])
+
+
+# ---------- منوهای اختصاصی هر بخش ----------
+def menu_of(section: str) -> InlineKeyboardMarkup:
+    menus: dict[str, list[list[tuple[str, str]]]] = {
+        "users": [
+            [("🔍 جست‌وجوی کاربر", "a:users:search:")],
+            [("📃 آخرین کاربران", "a:users:list:0")],
+            [("🚫 مسدودشده‌ها", "a:users:blocked:0")],
+        ],
+        "subs": [
+            [("📃 فهرست پلن‌ها", "a:subs:plans:")],
+            [("➕ پلن جدید", "a:subs:newplan:")],
+            [("💰 حالت فروش", "a:subs:salesmode:")],
+            [("💳 روش‌های پرداخت", "a:subs:paymethods:")],
+        ],
+        "stats": [
+            [("📈 داشبورد کلی", "a:stats:dash:")],
+            [("🧾 دفتر فروش", "a:stats:ledger:")],
+            [("👥 آمار کاربران", "a:stats:users:")],
+        ],
+        "downloads": [
+            [("📋 وضعیت صف", "a:downloads:queue:")],
+            [("❌ خطاها و تلاش مجدد", "a:downloads:failed:")],
+            [("⚙️ ظرفیت سرور", "a:downloads:capacity:")],
+        ],
+        "codes": [
+            [("➕ ساخت کد", "a:codes:new:")],
+            [("📃 فهرست کدها", "a:codes:list:0")],
+        ],
+        "broadcast": [
+            [("📢 پیام جدید", "a:broadcast:new:")],
+            [("📃 گزارش ارسال‌ها", "a:broadcast:jobs:")],
+        ],
+        "settings": [
+            [("📝 ویرایش پیام‌ها", "a:settings:texts:")],
+            [("🔧 حالت تعمیرات", "a:settings:maint:")],
+            [("⏱ تنظیمات انتظار", "a:settings:wait:")],
+            [("📥 پیکربندی حالت رایگان", "a:settings:free:")],
+        ],
+        "errors": [
+            [("🕘 خطاهای اخیر", "a:errors:list:all")],
+            [("📥 خطای دانلود", "a:errors:list:download")],
+            [("📤 خطای ارسال", "a:errors:list:send")],
+            [("📸 خطای اینستاگرام", "a:errors:list:instagram")],
+            [("⚙️ خطای داخلی", "a:errors:list:internal")],
+        ],
+        "admins": [
+            [("📃 مدیران فعال", "a:admins:list:")],
+            [("➕ افزودن مدیر", "a:admins:add:")],
+            [("🎭 نقش‌ها", "a:admins:roles:")],
+        ],
+        "health": [
+            [("🔄 بازخوانی وضعیت", "a:health:menu:")],
+        ],
+    }
+    return with_back(menus.get(section, []))
+
+
+def confirm_kb(yes_cb: str, no_cb: str = "a:home:") -> InlineKeyboardMarkup:
+    return kb([[("✅ تأیید و اجرا", yes_cb), ("❌ انصراف", no_cb)]])
+
+
+def pager(base_cb: str, offset: int, total: int, page_size: int = 10) -> list[list[tuple[str, str]]]:
+    """دکمه‌های صفحه‌بندی."""
+    rows = []
+    if offset >= page_size:
+        rows.append(("⏮ قبلی", f"{base_cb}{max(0, offset - page_size)}"))
+    if offset + page_size < total:
+        rows.append(("بعدی ⏭", f"{base_cb}{offset + page_size}"))
+    return [rows] if rows else []

@@ -1,0 +1,39 @@
+# Docker Compose — استقرار سامانه (بخش ۲۵ سند)
+#
+# راه‌اندازی:  cp .env.example .env  (و تکمیل مقادیر) سپس:
+#              docker compose up -d
+#
+# برای ارسال فایل تا ۲ گیگابایت، سرویس اختیاری telegram-bot-api را از حالت
+# کامنت خارج کنید و TELEGRAM_BASE_URL را مطابق تنظیم کنید (بخش ۲۵.۵ و ۳.۳).
+
+services:
+  bot:
+    build: .
+    container_name: ig2tg-bot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - bot-storage:/app/storage
+    # اگر پروکسی روی میزبان است:  network_mode: host
+    # و در .env مقدار PROXY=http://127.0.0.1:3062 قرار می‌گیرد
+
+  # --- سرویس اختیاری: Telegram Local Bot API Server برای فایل تا ۲ گیگ ---
+  # پیش‌نیاز: TELEGRAM_API_ID و TELEGRAM_API_HASH معتبر از my.telegram.org
+  # سپس در .env مقدار  TELEGRAM_BASE_URL=http://telegram-bot-api:8081/bot
+  # قرار دهید. بدون این سرویس، سقف آپلود بات ۵۰ مگابایت است و فایل‌های
+  # بزرگ‌تر به‌صورت خودکار فشرده می‌شوند.
+  # telegram-bot-api:
+  #   image: aiogram/telegram-bot-api:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     TELEGRAM_API_ID: ${TELEGRAM_API_ID}
+  #     TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+  #     TELEGRAM_LOCAL: 1
+  #   volumes:
+  #     - telegram-bot-api-data:/var/lib/telegram-bot-api
+  #   ports:
+  #     - "8081:8081"
+
+volumes:
+  bot-storage:
+  # telegram-bot-api-data:
